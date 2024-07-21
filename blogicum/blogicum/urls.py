@@ -18,8 +18,7 @@ from django.urls import include, path, reverse_lazy
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth.forms import UserCreationForm
-from django.views.generic import CreateView, TemplateView
-from pages.views import page_not_found, csrf_failure, server_error
+from django.views.generic import CreateView
 
 
 urlpatterns = [

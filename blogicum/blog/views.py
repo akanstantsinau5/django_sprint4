@@ -1,4 +1,3 @@
-from django.db.models.base import Model as Model
 from django.urls import reverse, reverse_lazy
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth import get_user_model
