@@ -1,8 +1,6 @@
 from django import forms
-from .models import Post, Comment
-from django.contrib.auth import get_user_model
 
-User = get_user_model()
+from .models import Post, Comment, User
 
 
 class ProfileForm(forms.ModelForm):

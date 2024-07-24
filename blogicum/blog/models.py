@@ -1,9 +1,12 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth import get_user_model
+
 from .managers import PostQuerySet
 
 User = get_user_model()
+
+PRINT_LIMIT = 20
 
 
 class PublishedModel(models.Model):
@@ -25,33 +28,39 @@ class Location(PublishedModel):
     class Meta:
         verbose_name = 'местоположение'
         verbose_name_plural = 'Местоположения'
+        ordering = ('-created_at',)
 
     def __str__(self):
-        return self.name
+        return self.name[:PRINT_LIMIT]
 
 
 class Category(PublishedModel):
     description = models.TextField('Описание')
     slug = models.SlugField(
         'Идентификатор', max_length=64, unique=True,
-        help_text='Идентификатор страницы для URL; разрешены символы латиницы,'
-        ' цифры, дефис и подчёркивание.'
+        help_text=(
+            'Идентификатор страницы для URL; разрешены символы латиницы,'
+            ' цифры, дефис и подчёркивание.'
+        )
     )
 
     class Meta:
         verbose_name = 'категория'
         verbose_name_plural = 'Категории'
+        ordering = ('-created_at',)
 
     def __str__(self):
-        return self.title
+        return self.title[:PRINT_LIMIT]
 
 
 class Post(PublishedModel):
     text = models.TextField('Текст')
     pub_date = models.DateTimeField(
         'Дата и время публикации', default=timezone.now,
-        help_text='Если установить дату и время в будущем — '
-        'можно делать отложенные публикации.'
+        help_text=(
+            'Если установить дату и время в будущем — '
+            'можно делать отложенные публикации.'
+        )
     )
     image = models.ImageField('Фото', upload_to='post_images', blank=True)
     author = models.ForeignKey(
@@ -81,18 +90,26 @@ class Post(PublishedModel):
         default_related_name = 'posts'
 
     def __str__(self):
-        return self.title
+        return self.title[:PRINT_LIMIT]
 
 
 class Comment(models.Model):
     post = models.ForeignKey(
         Post,
         on_delete=models.CASCADE,
-        related_name='comment'
+        related_name='comments'
     )
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+    )
     text = models.TextField('Комментарий')
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'комментарий'
+        verbose_name_plural = 'Комментарии'
+        ordering = ('-created_at',)
 
     def __str__(self):
         return f'Comment by {self.author} at {self.created_at}'
