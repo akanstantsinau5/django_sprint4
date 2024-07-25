@@ -1,16 +1,15 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils import timezone
-from django.contrib.auth import get_user_model
 
 from .managers import PostQuerySet
 
 User = get_user_model()
 
-PRINT_LIMIT = 20
+DISPLAYED_TITLE_CHARACTERS_LIMIT = 20
 
 
 class PublishedModel(models.Model):
-    title = models.CharField('Заголовок', max_length=256)
     is_published = models.BooleanField(
         'Опубликовано', default=True,
         help_text='Снимите галочку, чтобы скрыть публикацию.'
@@ -22,7 +21,6 @@ class PublishedModel(models.Model):
 
 
 class Location(PublishedModel):
-    title = None
     name = models.CharField('Название места', max_length=256)
 
     class Meta:
@@ -31,10 +29,11 @@ class Location(PublishedModel):
         ordering = ('-created_at',)
 
     def __str__(self):
-        return self.name[:PRINT_LIMIT]
+        return self.name[:DISPLAYED_TITLE_CHARACTERS_LIMIT]
 
 
 class Category(PublishedModel):
+    title = models.CharField('Заголовок', max_length=256)
     description = models.TextField('Описание')
     slug = models.SlugField(
         'Идентификатор', max_length=64, unique=True,
@@ -50,10 +49,11 @@ class Category(PublishedModel):
         ordering = ('-created_at',)
 
     def __str__(self):
-        return self.title[:PRINT_LIMIT]
+        return self.title[:DISPLAYED_TITLE_CHARACTERS_LIMIT]
 
 
 class Post(PublishedModel):
+    title = models.CharField('Заголовок', max_length=256)
     text = models.TextField('Текст')
     pub_date = models.DateTimeField(
         'Дата и время публикации', default=timezone.now,
@@ -90,18 +90,21 @@ class Post(PublishedModel):
         default_related_name = 'posts'
 
     def __str__(self):
-        return self.title[:PRINT_LIMIT]
+        return self.title[:DISPLAYED_TITLE_CHARACTERS_LIMIT]
 
 
 class Comment(models.Model):
     post = models.ForeignKey(
         Post,
+        verbose_name='Публикация',
         on_delete=models.CASCADE,
         related_name='comments'
     )
     author = models.ForeignKey(
         User,
+        verbose_name='Автор',
         on_delete=models.CASCADE,
+        related_name='post_author'
     )
     text = models.TextField('Комментарий')
     created_at = models.DateTimeField(auto_now_add=True)
