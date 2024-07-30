@@ -6,7 +6,7 @@ from django.urls import reverse
 class CommentAuthorMixin(UserPassesTestMixin):
 
     def get_success_url(self):
-        return reverse('blog:post_detail', args=[self.object.pk])
+        return reverse('blog:post_detail', kwargs={'post_pk': self.kwargs['post_pk']})
 
     def test_func(self):
         return self.request.user == self.get_object().author
@@ -15,7 +15,7 @@ class CommentAuthorMixin(UserPassesTestMixin):
 class EditPostMixin(UserPassesTestMixin):
 
     def get_success_url(self):
-        return reverse('blog:post_detail', args=[self.object.pk])
+        return reverse('blog:post_detail', kwargs={'post_pk': self.kwargs['post_pk']})
 
     def test_func(self):
         return self.request.user == self.get_object().author

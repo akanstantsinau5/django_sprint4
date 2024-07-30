@@ -107,7 +107,10 @@ class Comment(models.Model):
         related_name='post_author'
     )
     text = models.TextField('Комментарий')
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(
+        'Опубликовано',
+        auto_now_add=True
+    )
 
     class Meta:
         verbose_name = 'комментарий'

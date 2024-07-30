@@ -16,9 +16,13 @@ class PostQuerySet(models.QuerySet):
             comment_count=Count('comments')
         ).order_by('-pub_date')
 
-    def accessibility(self, user):
-        if user.is_authenticated:
-            return self.filter(Q(
-                is_published=True, pub_date__lte=timezone.now()
-            ) | Q(author=user))
-        return self.published_before_now()
+    # def accessibility(self, user):
+    #     if user.is_authenticated:
+    #         user_posts = user.posts.all()
+    #         published_posts = user.posts.published_before_now()
+    #     return user_posts | published_posts
+
+    def get_related_data(self):
+        return self.select_related(
+            'author', 'location', 'category'
+        ).prefetch_related('comments')

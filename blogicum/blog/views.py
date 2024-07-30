@@ -17,20 +17,25 @@ class PostListView(ListView):
     ordering = '-pub_date'
     template_name = 'blog/index.html'
     paginate_by = POSTS_ON_PAGE
+    queryset = Post.objects.published_in_published_category().comment_count()
 
-    def get_queryset(self):
-        return super().get_queryset().published_in_published_category(
-        ).comment_count()
+    # def get_queryset(self):
+    #     return super().get_queryset().published_in_published_category().comment_count()
 
 
-class DetailPostView(UserPassesTestMixin, DetailView):
+class DetailPostView(DetailView):
     model = Post
     template_name = 'blog/detail.html'
     pk_url_kwarg = 'post_pk'
 
     def get_object(self):
-        post = Post.objects.accessibility(self.request.user)
-        return get_object_or_404(post, pk=self.kwargs.get('post_pk'))
+        post = get_object_or_404(Post, pk=self.kwargs.get('post_pk'))
+        if not post.author == self.request.user:
+            return get_object_or_404(
+                Post.objects.published_in_published_category(),
+                pk=self.kwargs.get('post_pk')
+            )
+        return post
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(
@@ -40,8 +45,7 @@ class DetailPostView(UserPassesTestMixin, DetailView):
         )
 
     def test_func(self):
-        post = self.get_object()
-        return post.is_published or post.author == self.request.user
+        return self.get_object().author == self.request.user
 
 
 class CategoryPostView(ListView):
@@ -73,7 +77,11 @@ class ProfileView(ListView):
         return get_object_or_404(User, username=self.kwargs.get('username'))
 
     def get_queryset(self):
-        return self.get_author().posts.comment_count()
+        author = self.get_author()
+        if not author == self.request.user:
+            return author.posts.comment_count(
+            ).published_in_published_category()
+        return author.posts.comment_count()
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(
