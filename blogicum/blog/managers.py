@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Count, Q
+from django.db.models import Count
 from django.utils import timezone
 
 
@@ -15,12 +15,6 @@ class PostQuerySet(models.QuerySet):
         return self.annotate(
             comment_count=Count('comments')
         ).order_by('-pub_date')
-
-    # def accessibility(self, user):
-    #     if user.is_authenticated:
-    #         user_posts = user.posts.all()
-    #         published_posts = user.posts.published_before_now()
-    #     return user_posts | published_posts
 
     def get_related_data(self):
         return self.select_related(

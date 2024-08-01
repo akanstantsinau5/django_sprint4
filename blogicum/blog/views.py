@@ -17,10 +17,10 @@ class PostListView(ListView):
     ordering = '-pub_date'
     template_name = 'blog/index.html'
     paginate_by = POSTS_ON_PAGE
-    queryset = Post.objects.published_in_published_category().comment_count()
 
-    # def get_queryset(self):
-    #     return super().get_queryset().published_in_published_category().comment_count()
+    def get_queryset(self):
+        return super().get_queryset().published_in_published_category(
+        ).comment_count()
 
 
 class DetailPostView(DetailView):
