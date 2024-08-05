@@ -98,13 +98,11 @@ class Comment(models.Model):
         Post,
         verbose_name='Публикация',
         on_delete=models.CASCADE,
-        related_name='comments'
     )
     author = models.ForeignKey(
         User,
         verbose_name='Автор',
         on_delete=models.CASCADE,
-        related_name='post_author'
     )
     text = models.TextField('Комментарий')
     created_at = models.DateTimeField(
@@ -116,6 +114,7 @@ class Comment(models.Model):
         verbose_name = 'комментарий'
         verbose_name_plural = 'Комментарии'
         ordering = ('-created_at',)
+        default_related_name = 'comments'
 
     def __str__(self):
         return f'Comment by {self.author} at {self.created_at}'

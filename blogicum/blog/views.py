@@ -20,7 +20,7 @@ class PostListView(ListView):
 
     def get_queryset(self):
         return super().get_queryset().published_in_published_category(
-        ).comment_count()
+        ).comment_count().get_related_data()
 
 
 class DetailPostView(DetailView):
@@ -29,13 +29,13 @@ class DetailPostView(DetailView):
     pk_url_kwarg = 'post_pk'
 
     def get_object(self):
-        post = get_object_or_404(Post, pk=self.kwargs.get('post_pk'))
-        if not post.author == self.request.user:
+        if get_object_or_404(Post, pk=self.kwargs[self.pk_url_kwarg]
+                             ).author != self.request.user:
             return get_object_or_404(
                 Post.objects.published_in_published_category(),
-                pk=self.kwargs.get('post_pk')
+                pk=self.kwargs[self.pk_url_kwarg]
             )
-        return post
+        return get_object_or_404(Post, pk=self.kwargs[self.pk_url_kwarg])
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(
@@ -54,12 +54,12 @@ class CategoryPostView(ListView):
     paginate_by = POSTS_ON_PAGE
 
     def get_category(self):
-        return get_object_or_404(Category, slug=self.kwargs.get(
-            'category_slug'), is_published=True)
+        return get_object_or_404(Category, slug=self.kwargs['category_slug'],
+                                 is_published=True)
 
     def get_queryset(self):
         return self.get_category().posts.published_in_published_category(
-        ).comment_count()
+        ).comment_count().get_related_data()
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(
@@ -74,14 +74,13 @@ class ProfileView(ListView):
     paginate_by = POSTS_ON_PAGE
 
     def get_author(self):
-        return get_object_or_404(User, username=self.kwargs.get('username'))
+        return get_object_or_404(User, username=self.kwargs['username'])
 
     def get_queryset(self):
-        author = self.get_author()
-        if not author == self.request.user:
-            return author.posts.comment_count(
-            ).published_in_published_category()
-        return author.posts.comment_count()
+        if self.get_author() != self.request.user:
+            return self.get_author().posts.comment_count(
+            ).published_in_published_category().get_related_data()
+        return self.get_author().posts.comment_count().get_related_data()
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(
@@ -147,9 +146,7 @@ class AddCommentView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse('blog:post_detail', kwargs={
-            'post_pk': self.kwargs['post_pk']
-        })
+        return reverse('blog:post_detail', args=[self.kwargs['post_pk']])
 
 
 class CommentView(LoginRequiredMixin, CommentAuthorMixin):
