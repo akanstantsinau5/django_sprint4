@@ -29,23 +29,20 @@ class DetailPostView(DetailView):
     pk_url_kwarg = 'post_pk'
 
     def get_object(self):
-        if get_object_or_404(Post, pk=self.kwargs[self.pk_url_kwarg]
-                             ).author != self.request.user:
+        post = get_object_or_404(Post, pk=self.kwargs[self.pk_url_kwarg])
+        if post.author != self.request.user:
             return get_object_or_404(
                 Post.objects.published_in_published_category(),
                 pk=self.kwargs[self.pk_url_kwarg]
             )
-        return get_object_or_404(Post, pk=self.kwargs[self.pk_url_kwarg])
+        return post
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(
             form=CommentForm(),
-            comments=self.object.comments.order_by('created_at'),
+            comments=self.object.comments.all(),
             **kwargs,
         )
-
-    def test_func(self):
-        return self.get_object().author == self.request.user
 
 
 class CategoryPostView(ListView):
@@ -77,10 +74,11 @@ class ProfileView(ListView):
         return get_object_or_404(User, username=self.kwargs['username'])
 
     def get_queryset(self):
-        if self.get_author() != self.request.user:
-            return self.get_author().posts.comment_count(
+        author = self.get_author()
+        if author != self.request.user:
+            return author.posts.comment_count(
             ).published_in_published_category().get_related_data()
-        return self.get_author().posts.comment_count().get_related_data()
+        return author.posts.comment_count().get_related_data()
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(
