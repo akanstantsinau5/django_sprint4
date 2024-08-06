@@ -75,10 +75,10 @@ class ProfileView(ListView):
 
     def get_queryset(self):
         author = self.get_author()
+        author_posts = author.posts.comment_count().get_related_data()
         if author != self.request.user:
-            return author.posts.comment_count(
-            ).published_in_published_category().get_related_data()
-        return author.posts.comment_count().get_related_data()
+            return author_posts.published_in_published_category()
+        return author_posts
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(

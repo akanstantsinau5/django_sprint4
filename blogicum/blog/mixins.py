@@ -3,7 +3,7 @@ from django.shortcuts import redirect
 from django.urls import reverse
 
 
-class BaseMixin(UserPassesTestMixin):
+class CommentAuthorEditPostBaseMixin(UserPassesTestMixin):
 
     def get_success_url(self):
         return reverse('blog:post_detail', args=[self.kwargs['post_pk']])
@@ -12,11 +12,11 @@ class BaseMixin(UserPassesTestMixin):
         return self.request.user == self.get_object().author
 
 
-class CommentAuthorMixin(BaseMixin):
+class CommentAuthorMixin(CommentAuthorEditPostBaseMixin):
     pass
 
 
-class EditPostMixin(BaseMixin):
+class EditPostMixin(CommentAuthorEditPostBaseMixin):
 
     def handle_no_permission(self):
         return redirect('blog:post_detail', self.kwargs['post_pk'])
