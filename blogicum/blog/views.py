@@ -1,8 +1,8 @@
-from django.urls import reverse, reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import get_object_or_404
+from django.urls import reverse, reverse_lazy
 from django.views.generic import (
     ListView, DetailView, UpdateView, CreateView, DeleteView)
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 from .mixins import CommentAuthorMixin, EditPostMixin
 from .forms import CommentForm, PostForm, ProfileForm
@@ -19,8 +19,8 @@ class PostListView(ListView):
     paginate_by = POSTS_ON_PAGE
 
     def get_queryset(self):
-        return super().get_queryset().published_in_published_category(
-        ).comment_count().get_related_data()
+        return super().get_queryset().published(
+        ).comment_count().modify_related_query()
 
 
 class DetailPostView(DetailView):
@@ -30,12 +30,11 @@ class DetailPostView(DetailView):
 
     def get_object(self):
         post = get_object_or_404(Post, pk=self.kwargs[self.pk_url_kwarg])
-        if post.author != self.request.user:
-            return get_object_or_404(
-                Post.objects.published_in_published_category(),
-                pk=self.kwargs[self.pk_url_kwarg]
-            )
-        return post
+        if post.author == self.request.user:
+            return post
+        return get_object_or_404(
+            Post.objects.published(),
+            pk=self.kwargs[self.pk_url_kwarg])
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(
@@ -55,8 +54,8 @@ class CategoryPostView(ListView):
                                  is_published=True)
 
     def get_queryset(self):
-        return self.get_category().posts.published_in_published_category(
-        ).comment_count().get_related_data()
+        return self.get_category().posts.published(
+        ).comment_count().modify_related_query()
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(
@@ -75,10 +74,10 @@ class ProfileView(ListView):
 
     def get_queryset(self):
         author = self.get_author()
-        author_posts = author.posts.comment_count().get_related_data()
-        if author != self.request.user:
-            return author_posts.published_in_published_category()
-        return author_posts
+        posts = author.posts.comment_count().modify_related_query()
+        if author == self.request.user:
+            return posts
+        return posts.published()
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(
