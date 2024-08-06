@@ -11,7 +11,7 @@ DISPLAYED_TITLE_CHARACTERS_LIMIT = 20
 
 class PublishedModel(models.Model):
     is_published = models.BooleanField(
-        'Опубликовано', 
+        'Опубликовано',
         default=True,
         help_text='Снимите галочку, чтобы скрыть публикацию.'
     )
